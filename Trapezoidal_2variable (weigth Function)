@@ -1,0 +1,66 @@
+
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+// Function to be integrated
+double f(double x, double y)
+{
+    return x * x + y * y;
+}
+
+int main()
+{
+    double a, b, c, d, hx, hy, sum = 0.0;
+    int n, m;
+
+    cout << "Enter lower and upper limits for x: ";
+    cin >> a >> b;
+
+    cout << "Enter lower and upper limits for y: ";
+    cin >> c >> d;
+
+    cout << "Enter number of subintervals for x and y: ";
+    cin >> n >> m;
+
+    if (n <= 0 || m <= 0)
+    {
+        cout << "Number of subintervals must be positive.";
+        return 1;
+    }
+
+    hx = (b - a) / n;
+    hy = (d - c) / m;
+
+    for (int i = 0; i <= n; i++)
+    {
+        double x = a + i * hx;
+
+        if (i==0 || i==n)
+          wx=0.5;
+
+        else
+           wx=1;
+
+        for (int j = 0; j <= m; j++)
+        {
+            double y = c + j * hy;
+            
+             if (i==0 || i==n)
+                wy=0.5;
+
+               else
+                 wy=1;
+
+            sum += wx * wy * f(x, y);
+        }
+    }
+
+    double integral = hx * hy * sum;
+
+    cout << fixed << setprecision(6);
+    cout << "Approximate value of integral = "
+         << integral << endl;
+
+    return 0;
+}
