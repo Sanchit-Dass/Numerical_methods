@@ -1,0 +1,86 @@
+
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+using namespace std;
+
+int main() {
+
+    const int N = 3;
+    const double tolerance = 1e-10;
+    const int maxIterations = 100000;
+
+    // STEP 1: Declare 2D array
+    // Initially all entries are zero
+    double u[N + 1][N + 1] = {};
+
+    // STEP 2: Set upper boundary values
+    for (int i = 1; i < N; i++) {
+        u[N][i] = 100.0;
+    }
+
+    // STEP 3: Gauss-Seidel iterations
+    int iteration;
+
+    for (iteration = 1;
+         iteration <= maxIterations;
+         iteration++) {
+
+        double maxChange = 0.0;
+
+        // Traverse interior points
+        for (int j = 1; j < N; j++) {
+
+            for (int i = 1; i < N; i++) {
+
+                double oldValue = u[j][i];
+
+                // Five-point formula
+                u[j][i] = (
+                    u[j][i-1] +
+                    u[j][i+1] +
+                    u[j-1][i] +
+                    u[j+1][i]
+                ) / 4.0;
+
+                double change =
+                    fabs(u[j][i] - oldValue);
+
+                if (change > maxChange) {
+                    maxChange = change;
+                }
+            }
+        }
+
+        // STEP 4: Check convergence
+        if (maxChange < tolerance) {
+            break;
+        }
+    }
+
+    if (iteration > maxIterations) {
+        cout << "Method did not converge.\n";
+        return 1;
+    }
+
+    // STEP 5: Print results
+    cout << "Iterations: " << iteration << "\n";
+
+    cout << fixed << setprecision(6);
+
+    cout << "A = " << u[1][1] << "\n";
+    cout << "B = " << u[1][2] << "\n";
+    cout << "C = " << u[2][1] << "\n";
+    cout << "D = " << u[2][2] << "\n";
+
+    cout << "\nFinal grid:\n";
+
+    for (int j = N; j >= 0; j--) {
+        for (int i = 0; i <= N; i++) {
+            cout << setw(12) << u[j][i];
+        }
+        cout << "\n";
+    }
+
+    return 0;
+}
