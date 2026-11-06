@@ -1,0 +1,73 @@
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+int main()
+{
+    const int N = 4;     // Space intervals
+    const int M = 10;    // Time steps
+
+    double alpha = 1.0;
+    double dx = 1.0 / N;
+    double dt = 0.025;
+
+    double r = alpha * dt / (dx * dx);
+
+    // u[n][i] = temperature at time n,
+    // position i
+    double u[M+1][N+1] = {};
+
+    if (r > 0.5)
+    {
+        cout << "System is Unstable" << endl;
+        return 1;
+    }
+
+    // Initial condition: u(x,0) = x(1-x)
+    for (int i = 0; i <= N; i++)
+    {
+        double x = i * dx;
+        u[0][i] = x * (1.0 - x);
+    }
+
+    // Explicit FTCS method
+    for (int n = 0; n < M; n++)
+    {
+        // Boundary conditions
+        u[n+1][0] = 0.0;
+        u[n+1][N] = 0.0;
+
+        // Interior points
+        for (int i = 1; i < N; i++)
+        {
+            u[n+1][i] = u[n][i]
+                     + r * (u[n][i-1]
+                     - 2.0 * u[n][i]
+                     + u[n][i+1]);
+        }
+    }
+
+    // Print numerical solution
+    cout << fixed << setprecision(4);
+    cout << "r = " << r << endl;
+
+    cout << "Time";
+    for (int i = 0; i <= N; i++)
+        cout << setw(10) << i * dx;
+
+    cout << endl;
+
+    for (int n = 0; n <= M; n++)
+    {
+        cout << setw(5) << n * dt;
+
+        for (int i = 0; i <= N; i++)
+        {
+            cout << setw(10) << u[n][i];
+        }
+
+        cout << endl;
+    }
+
+    return 0;
+}
