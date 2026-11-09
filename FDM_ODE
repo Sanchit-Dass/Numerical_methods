@@ -1,0 +1,119 @@
+
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+using namespace std;
+
+// General ODE:
+// y'' + p(x)y' + q(x)y = r(x)
+
+// Example: y'' = -2
+double p(double x) { return 0.0; }
+double q(double x) { return 0.0; }
+double r(double x) { return -2.0; }
+
+int main()
+{
+    const int MAX_N = 100;
+    const double EPS = 1e-12;
+
+    double a, b, ya, yb, h;
+    int n, i;
+
+    cout << "Enter the lower and upper limits of x: ";
+    cin >> a >> b;
+
+    cout << "Enter the boundary values y(a) and y(b): ";
+    cin >> ya >> yb;
+
+    cout << "Enter the number of subintervals: ";
+    cin >> n;
+
+    // Step size
+    h = (b - a) / n;
+
+    if (!isfinite(h) || h <= 0.0)
+    {
+        cout << "Invalid step size!" << endl;
+        return 1;
+    }
+
+    // Ordinary arrays
+    double A[101] = {0}, B[101] = {0};
+    double C[101] = {0}, D[101] = {0};
+    double y[101] = {0};
+
+    // Step 1: Form the finite difference equations
+    for (i = 1; i <= n-1; i++)
+    {
+        double x = a + i*h;
+
+        A[i] = 1.0 - h*p(x)/2.0;
+        B[i] = -2.0 + h*h*q(x);
+        C[i] = 1.0 + h*p(x)/2.0;
+        D[i] = h*h*r(x);
+
+        if (!isfinite(A[i]) || !isfinite(B[i]) || !isfinite(C[i]) || !isfinite(D[i]))
+        {
+            cout << "Invalid coefficient!" << endl;
+            return 1;
+        }
+    }
+
+    // Step 2: Apply boundary conditions
+    D[1] = D[1] - A[1]*ya;
+    D[n-1] = D[n-1] - C[n-1]*yb;
+
+    // Step 3: Thomas algorithm - Forward elimination
+    for (i = 2; i <= n-1; i++)
+    {
+        if (!isfinite(B[i-1]) || fabs(B[i-1]) < EPS)
+        {
+            cout << "Zero or very small pivot!" << endl;
+            return 1;
+        }
+
+        double m = A[i]/B[i-1];
+
+        B[i] = B[i] - m*C[i-1];
+        D[i] = D[i] - m*D[i-1];
+    }
+
+    if (!isfinite(B[n-1]) || fabs(B[n-1]) < EPS)
+    {
+        cout << "Zero or very small pivot!" << endl;
+        return 1;
+    }
+
+    // Step 4: Back substitution
+    y[0] = ya;
+    y[n] = yb;
+
+    y[n-1] = D[n-1]/B[n-1];
+
+    for (i = n-2; i >= 1; i--)
+    {
+        y[i] = (D[i] - C[i]*y[i+1])/B[i];
+    }
+
+    // Step 5: Display the numerical solution
+    cout << fixed << setprecision(6);
+
+    cout << "\nStep size h = " << h << endl;
+    cout << "i\t x\t\t y(FDM)" << endl;
+
+    for (i = 0; i <= n; i++)
+    {
+        if (!isfinite(y[i]))
+        {
+            cout << "Numerical error!" << endl;
+            return 1;
+        }
+
+        cout << i << "\t"
+             << a+i*h << "\t"
+             << y[i] << endl;
+    }
+
+    return 0;
+}
