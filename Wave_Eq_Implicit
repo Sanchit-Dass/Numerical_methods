@@ -1,0 +1,95 @@
+
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+using namespace std;
+
+int main()
+{
+    const int N = 4;         // Space intervals
+    const int M = 10;        // Time steps
+    const double pi = acos(-1.0);
+
+    double c = 1.0;          // Wave speed
+    double dx = 1.0 / N;
+    double dt = 0.1;
+    double r = c * dt / dx;
+
+    double u[M+1][N+1] = {0};
+    double a[N+1], b[N+1], s[N+1], d[N+1];
+
+    // Initial displacement: u(x,0) = sin(pi*x)
+    // Initial velocity: u_t(x,0) = 0
+    for (int i = 0; i <= N; i++)
+    {
+        double x = i * dx;
+        u[0][i] = sin(pi * x);
+    }
+    u[0][0] = 0.0;
+    u[0][N] = 0.0;
+
+    // Implicit method
+    for (int n = 0; n < M; n++)
+    {
+        // Boundary conditions
+        u[n+1][0] = 0.0;
+        u[n+1][N] = 0.0;
+
+        double w = r*r / 2.0;
+
+        // Form tridiagonal equations
+        for (int i = 1; i < N; i++)
+        {
+            a[i] = -w;
+            b[i] = 1.0 + 2.0*w;
+            s[i] = -w;
+
+            // First time step: zero initial velocity
+            if (n == 0)
+                d[i] = u[0][i];
+            else
+                d[i] = 2.0*u[n][i] - u[n-1][i]
+                     + w*(u[n-1][i-1] - 2.0*u[n-1][i]
+                     + u[n-1][i+1]);
+        }
+
+        // Thomas algorithm: Forward elimination
+        for (int i = 2; i < N; i++)
+        {
+            double factor = a[i] / b[i-1];
+
+            b[i] = b[i] - factor*s[i-1];
+            d[i] = d[i] - factor*d[i-1];
+        }
+
+        // Thomas algorithm: Back substitution
+        u[n+1][N-1] = d[N-1] / b[N-1];
+
+        for (int i = N-2; i >= 1; i--)
+        {
+            u[n+1][i] = (d[i] - s[i]*u[n+1][i+1]) / b[i];
+        }
+    }
+
+    // Print numerical solution
+    cout << fixed << setprecision(4);
+    cout << "r = " << r << endl;
+
+    cout << "Time";
+    for (int i = 0; i <= N; i++)
+        cout << setw(10) << i * dx;
+
+    cout << endl;
+
+    for (int n = 0; n <= M; n++)
+    {
+        cout << setw(5) << n * dt;
+
+        for (int i = 0; i <= N; i++)
+            cout << setw(10) << u[n][i];
+
+        cout << endl;
+    }
+
+    return 0;
+}
