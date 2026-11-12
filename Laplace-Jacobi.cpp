@@ -64,7 +64,7 @@ int main()
 
     if (k != 0)
     {
-        cout << "Method did not converge!" << endl;
+        cout << "Method did not converge under 100000 iterations!" << endl;
         return 1;
     }
 
